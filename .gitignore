@@ -1,4 +1,6 @@
 data/
 Pipfile
 Pipfile.lock
-.idea
+.idea.ipynb_checkpoints 
+.idea 
+*/.ipynb_checkpoints 
