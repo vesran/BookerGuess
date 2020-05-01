@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import cross_val_score
 
 
-def confusion_matrix(classifier, X, y, normalize=True, decimal=2, plot=False):
+def confusion_matrix(classifier, X, y, decimal=2, plot=False):
     labels = np.unique(y)
     y_pred = classifier.predict(X)
     counts = np.zeros((labels.shape[0], labels.shape[0]))
@@ -17,16 +17,20 @@ def confusion_matrix(classifier, X, y, normalize=True, decimal=2, plot=False):
         i_prediction = np.where(labels == prediction)[0][0]
         counts[i_truth][i_prediction] += 1
 
-    if normalize:
-        counts = np.round(counts / np.sum(counts, axis=1).reshape(counts.shape[0], 1), decimal)
+    # Normalize
+    counts = np.round(counts / np.sum(counts, axis=1).reshape(counts.shape[0], 1), decimal)
+
     if plot:
-        plt.matshow(counts)
-        plt.ylabel('Truth')
-        plt.xlabel('Prediction')
-        plt.yticks(labels)
-        plt.xticks(labels)
+        fig, ax = plt.subplots()
+        ax.grid(False)
+        ax.matshow(counts, cmap=plt.cm.Blues)
+        ax.set_ylabel('Truth')
+        ax.set_xlabel('Prediction')
+        ax.set_xticklabels([0] + labels.tolist())
+        ax.set_yticklabels([0] + labels.tolist())
         for (i, j), z in np.ndenumerate(counts):
-            plt.text(j, i, '{:0.1f}'.format(z), ha='center', va='center')
+            color = 'black' if counts[i][j] <= 0.5 else 'white'
+            ax.text(j, i, f'{{:0.{decimal}f}}'.format(z), ha='center', va='center', c=color)
     return counts
 
 
@@ -46,4 +50,4 @@ if __name__ == '__main__':
     # the impact on the results
     classifier = svm.SVC(kernel='linear', C=0.01).fit(X_train, y_train)
 
-    confusion_matrix(classifier, X_test, y_test, normalize=True, plot=True)
+    confusion_matrix(classifier, X_test, y_test, plot=True)
