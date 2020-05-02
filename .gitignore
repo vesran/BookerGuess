@@ -6,5 +6,5 @@ Pipfile.lock
 */.ipynb_checkpoints 
 .ipynb_checkpoints
 scrap
-
-
+.pytest_cache
+__pycache__

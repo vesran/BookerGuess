@@ -1,4 +1,4 @@
-# TODO: confusion matrix
+# TODO: confusion matrix, precision, recall, f1-score
 # TODO: cross validation
 
 import numpy as np
@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import cross_val_score
 
 
-def confusion_matrix(classifier, X, y, decimal=2, plot=False):
+def confusion_matrix(classifier, X, y, normalize=True, decimal=2, plot=False):
     labels = np.unique(y)
     y_pred = classifier.predict(X)
     counts = np.zeros((labels.shape[0], labels.shape[0]))
@@ -18,7 +18,8 @@ def confusion_matrix(classifier, X, y, decimal=2, plot=False):
         counts[i_truth][i_prediction] += 1
 
     # Normalize
-    counts = np.round(counts / np.sum(counts, axis=1).reshape(counts.shape[0], 1), decimal)
+    if normalize:
+        counts = np.round(counts / np.sum(counts, axis=1).reshape(counts.shape[0], 1), decimal)
 
     if plot:
         fig, ax = plt.subplots()
@@ -34,20 +35,21 @@ def confusion_matrix(classifier, X, y, decimal=2, plot=False):
     return counts
 
 
+def recall(bi_confmat):
+    assert bi_confmat.shape == (2, 2)
+    return bi_confmat[0][0] / (bi_confmat[0][0] + bi_confmat[0][1])
+
+
+def precision(bi_confmat):
+    assert bi_confmat.shape == (2, 2)
+    return bi_confmat[0][0] / (bi_confmat[0][0] + bi_confmat[1][0])
+
+
+def f1score(bi_confmat):
+    prec = precision(bi_confmat)
+    rec = recall(bi_confmat)
+    return 2 * rec * prec / (rec + prec)
+
+
 if __name__ == '__main__':
-    from sklearn import svm, datasets
-    from sklearn.model_selection import train_test_split
-
-    # import some data to play with
-    iris = datasets.load_iris()
-    X = iris.data
-    y = iris.target
-
-    # Split the data into a training set and a test set
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
-
-    # Run classifier, using a model that is too regularized (C too low) to see
-    # the impact on the results
-    classifier = svm.SVC(kernel='linear', C=0.01).fit(X_train, y_train)
-
-    confusion_matrix(classifier, X_test, y_test, plot=True)
+    pass
