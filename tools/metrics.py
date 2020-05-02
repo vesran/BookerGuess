@@ -4,9 +4,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Compare with sklearn metrics
-from sklearn.model_selection import cross_val_score
-
 
 def confusion_matrix(classifier, X, y, normalize=True, decimal=2, plot=False):
     labels = np.unique(y)
@@ -45,11 +42,50 @@ def precision(bi_confmat):
     return bi_confmat[0][0] / (bi_confmat[0][0] + bi_confmat[1][0])
 
 
-def f1score(bi_confmat):
+def f1score(model, X, y):
+    bi_confmat = confusion_matrix(model, X, y, plot=False, decimal=6)
     prec = precision(bi_confmat)
     rec = recall(bi_confmat)
     return 2 * rec * prec / (rec + prec)
 
 
+def score(model, X, y):
+    y_pred = model.predict(X)
+    return np.sum((y_pred == y).astype(int)) / y.shape[0]
+
+
+def cross_validation_score(model, X, y, k=3, scorer=score):
+    n = X.shape[0]
+    p = np.random.permutation(len(X))
+    X, y = X[p], y[p]
+    partition_X = [X[int((i-1)*n/k):int(i*n/k)] for i in range(1, k+1)]
+    partition_y = [y[int((i-1)*n/k):int(i*n/k)] for i in range(1, k+1)]
+    scores = []
+
+    for i in range(len(partition_X)):
+        # Get train data
+        train_X = partition_X[:]
+        train_X.pop(i)
+        train_X = np.concatenate(train_X)
+        train_y = partition_y[:]
+        train_y.pop(i)
+        train_y = np.concatenate(train_y)
+
+        # Train and score
+        model.fit(train_X, train_y)  # Suppose fit makes the model forget previously learnt data
+        scores.append(scorer(model, partition_X[i], partition_y[i]))
+    return np.array(scores)
+
+
 if __name__ == '__main__':
-    pass
+    from sklearn.model_selection import cross_val_score
+    from sklearn.tree import DecisionTreeClassifier
+    from sklearn import datasets
+
+    iris = datasets.load_iris()
+    X = iris.data
+    y = iris.target
+    model = DecisionTreeClassifier()
+    cross_val_score(model, X, y).mean()
+
+    cross_validation_score(model, X, y, k=10).mean()

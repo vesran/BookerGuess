@@ -53,6 +53,6 @@ def test_precision():
 def test_f1score():
     model = Model2()
     y = ['a', 'a', 'b', 'a', 'b', 'b']
-    m = confusion_matrix(model, [], y, plot=False, decimal=1, normalize=False)
-    f1 = f1score(m)
-    assert f1 == 2/3
+    f1 = f1score(model, [], y,)
+    assert round(f1, 2) == round(2/3, 2)
+
