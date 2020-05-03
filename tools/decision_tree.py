@@ -2,13 +2,14 @@
 # TODO : Random forest
 
 import numpy as np
+import random as rand
 from collections import Counter
 
 
 class DecisionTreeClassifier:
     """ Decision Tree for categorical variables and classification using CART """
 
-    def __init__(self, max_depth, label_names=None, _i_split=None, _i_var=None, _value=None):
+    def __init__(self, max_depth, label_names=None, _i_split=None, _i_var=None, _value=None, random_features=False):
         self.max_depth = max_depth
         self.X, self.y = None, None
         self.children = None
@@ -16,6 +17,7 @@ class DecisionTreeClassifier:
         self._i_split = _i_split
         self._i_var = _i_var
         self._value = _value
+        self.random_features = random_features
 
     def fit(self, X, y):
         self.X, self.y = X, y
@@ -52,10 +54,11 @@ class DecisionTreeClassifier:
         return -score
 
     def _split(self):
-        gini_scores = []
-        for i_var in range(self.X.shape[1]):
-            score = self._info_gain(i_var)
-            gini_scores.append(score)
+        if self.random_features:
+            indexes = rand.sample(set(range(self.X.shape[1])), int(np.ceil(self.X.shape[1])))
+            gini_scores = [self._info_gain(i_var) if i_var in indexes else 0 for i_var in range(self.X.shape[1])]
+        else:
+            gini_scores = [self._info_gain(i_var) for i_var in range(self.X.shape[1])]
         print(gini_scores)
         self._i_split = np.argmax(gini_scores)
         print(f"Split on var{self._i_split}")
@@ -66,7 +69,8 @@ class DecisionTreeClassifier:
             if self.label_names is not None:
                 names = self.label_names[:]
                 names.pop(self._i_split)
-            child = DecisionTreeClassifier(max_depth=self.max_depth-1, _i_var=self._i_split, _value=value, label_names=names)
+            child = DecisionTreeClassifier(max_depth=self.max_depth-1, _i_var=self._i_split, _value=value,
+                                           label_names=names, random_features=self.random_features)
             positions = np.where(self.X[:, self._i_split] == value)[0]
             child.X = np.delete(self.X[positions], self._i_split, axis=1)
             child.y = self.y[positions]
@@ -80,7 +84,6 @@ class DecisionTreeClassifier:
         else:
             value = self._value
             varname = self._i_split
-
         return f"={value} | Split {varname}"
 
     def _single_predict(self, x):
@@ -131,7 +134,8 @@ if __name__ == '__main__':
     df = pd.read_csv('./resources/titanic.csv', sep=',').drop(['Fare', 'Name', 'Age'], axis=1)
     y = df['Survived'].values
     X = df.drop('Survived', axis=1).values
-    dtree = DecisionTreeClassifier(max_depth=10, label_names=['Pclass', 'Sex', 'Siblings/Spouses Aboard', 'Parents/Children Aboard'])
+    dtree = DecisionTreeClassifier(max_depth=10, random_features=True,
+                                   label_names=['Pclass', 'Sex', 'Siblings/Spouses Aboard', 'Parents/Children Aboard'])
     dtree.fit(X[:700], y[:700])
     # print(dtree._single_predict(X[0]))
 
