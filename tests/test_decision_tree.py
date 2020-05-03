@@ -1,4 +1,4 @@
-from tools.tree import DecisionTreeClassifier
+from tools.decision_tree import DecisionTreeClassifier
 import numpy as np
 import pandas as pd
 import random as rand
