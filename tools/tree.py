@@ -26,7 +26,7 @@ class DecisionTreeClassifier:
             print(f"Iteration {i}")
             i += 1
             to_develop = to_visit.pop(0)
-            to_develop.children = to_develop._split()
+            to_develop.children = to_develop._split()  # Children are reset every time fit is called
             print("Number of children :", len(to_develop.children))
             to_visit.extend([child for child in to_develop.children if child._is_splitable()])
             print(f"to_visit : {to_visit}")
@@ -94,6 +94,10 @@ class DecisionTreeClassifier:
                     break
         return Counter(current.y).most_common(1)[0][0]
 
+    def predict(self, X):
+        predictions = np.array([self._single_predict(x) for x in X])
+        return predictions
+
 
 def decision_tree2ete(dtree):
     """Converts a decision tree to an ete3 tree for visualisation"""
@@ -122,13 +126,15 @@ if __name__ == '__main__':
     from ete3 import AttrFace, faces
     import ete3
     import pandas as pd
+    from sklearn.tree import DecisionTreeClassifier as DTC
 
-    df = pd.read_csv('./data/titanic.csv', sep=',').drop(['Fare', 'Name', 'Age'], axis=1)
+    df = pd.read_csv('./resources/titanic.csv', sep=',').drop(['Fare', 'Name', 'Age'], axis=1)
     y = df['Survived'].values
     X = df.drop('Survived', axis=1).values
     dtree = DecisionTreeClassifier(max_depth=10, label_names=['Pclass', 'Sex', 'Siblings/Spouses Aboard', 'Parents/Children Aboard'])
-    dtree.fit(X, y)
+    dtree.fit(X[:700], y[:700])
     # print(dtree._single_predict(X[0]))
+
 
     def my_layout(node):
         # Adds the name face to the image at the preferred position
@@ -145,4 +151,4 @@ if __name__ == '__main__':
 
     # Display
     print(ete_tree.get_ascii(show_internal=True))
-    # ete_tree.show(tree_style=ts)
+    ete_tree.show(tree_style=ts)
