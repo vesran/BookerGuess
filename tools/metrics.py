@@ -1,6 +1,3 @@
-# TODO: confusion matrix, precision, recall, f1-score
-# TODO: cross validation
-
 import numpy as np
 import matplotlib.pyplot as plt
 
