@@ -166,4 +166,3 @@ if __name__ == '__main__':
     # print(dtree._single_predict(X[0]))
 
     ete_tree, ts = plot_decision_tree(dtree, console=True)
-    # ete_tree.show(tree_style=ts)
