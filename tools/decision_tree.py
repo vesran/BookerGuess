@@ -55,8 +55,9 @@ class DecisionTreeClassifier:
 
     def _split(self):
         if self.random_features:
-            indexes = rand.sample(set(range(self.X.shape[1])), int(np.ceil(self.X.shape[1])))
-            gini_scores = [self._info_gain(i_var) if i_var in indexes else 0 for i_var in range(self.X.shape[1])]
+            indexes = rand.sample(set(range(self.X.shape[1])), int(np.ceil(self.X.shape[1] ** 0.5)))
+            print("Considering", indexes, len(indexes), '/', self.X.shape[1])
+            gini_scores = [self._info_gain(i_var) if i_var in indexes else -100 for i_var in range(self.X.shape[1])]
         else:
             gini_scores = [self._info_gain(i_var) for i_var in range(self.X.shape[1])]
         print(gini_scores)
@@ -89,12 +90,16 @@ class DecisionTreeClassifier:
     def _single_predict(self, x):
         current = self
         while current.children is not None:
+            loop = True
             value = x[current._i_split]  # Value to consider
             for child in current.children:
                 if child._value == value:
                     x = np.delete(x, current._i_split)
                     current = child
+                    loop = False
                     break
+            if loop:
+                break
         return Counter(current.y).most_common(1)[0][0]
 
     def predict(self, X):
@@ -125,6 +130,27 @@ def decision_tree2ete(dtree):
     return res_tree
 
 
+def plot_decision_tree(dtree, console=False):
+    def my_layout(node):
+        # Adds the name face to the image at the preferred position
+        name_face = AttrFace("name")
+        faces.add_face_to_node(name_face, node, column=0, position="branch-right")
+
+    # Tree style parameters
+    ts = ete3.TreeStyle()
+    ts.scale = 100  # 100 pixels per branch length unit
+    ete_tree = decision_tree2ete(dtree)
+    ts.show_leaf_name = False
+    ts.layout_fn = my_layout
+
+    if console:
+        print(ete_tree.get_ascii(show_internal=True))
+
+    # Display
+    ete_tree.show(tree_style=ts)
+    return ete_tree, ts
+
+
 if __name__ == '__main__':
     from ete3 import AttrFace, faces
     import ete3
@@ -134,25 +160,10 @@ if __name__ == '__main__':
     df = pd.read_csv('./resources/titanic.csv', sep=',').drop(['Fare', 'Name', 'Age'], axis=1)
     y = df['Survived'].values
     X = df.drop('Survived', axis=1).values
-    dtree = DecisionTreeClassifier(max_depth=10, random_features=True,
+    dtree = DecisionTreeClassifier(max_depth=10,
                                    label_names=['Pclass', 'Sex', 'Siblings/Spouses Aboard', 'Parents/Children Aboard'])
     dtree.fit(X[:700], y[:700])
     # print(dtree._single_predict(X[0]))
 
-
-    def my_layout(node):
-        # Adds the name face to the image at the preferred position
-        name_face = AttrFace("name")
-        faces.add_face_to_node(name_face, node, column=0, position="branch-right")
-
-
-    # Tree style parameters
-    ts = ete3.TreeStyle()
-    ts.scale = 100  # 100 pixels per branch length unit
-    ete_tree = decision_tree2ete(dtree)
-    ts.show_leaf_name = False
-    ts.layout_fn = my_layout
-
-    # Display
-    print(ete_tree.get_ascii(show_internal=True))
-    ete_tree.show(tree_style=ts)
+    ete_tree, ts = plot_decision_tree(dtree, console=True)
+    # ete_tree.show(tree_style=ts)
