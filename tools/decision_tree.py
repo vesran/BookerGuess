@@ -25,13 +25,13 @@ class DecisionTreeClassifier:
         to_visit = [self]
         i = 0
         while len(to_visit) > 0:
-            print(f"Iteration {i}")
+            # print(f"Iteration {i}")
             i += 1
             to_develop = to_visit.pop(0)
             to_develop.children = to_develop._split()  # Children are reset every time fit is called
-            print("Number of children :", len(to_develop.children))
+            # print("Number of children :", len(to_develop.children))
             to_visit.extend([child for child in to_develop.children if child._is_splitable()])
-            print(f"to_visit : {to_visit}")
+            # print(f"to_visit : {to_visit}")
 
     def _is_splitable(self):
         return self.max_depth > 0 and np.unique(self.y).shape[0] > 1 and self.X.shape[1] > 1
@@ -56,13 +56,13 @@ class DecisionTreeClassifier:
     def _split(self):
         if self.random_features:
             indexes = rand.sample(set(range(self.X.shape[1])), int(np.ceil(self.X.shape[1] ** 0.5)))
-            print("Considering", indexes, len(indexes), '/', self.X.shape[1])
+            # print("Considering", indexes, len(indexes), '/', self.X.shape[1])
             gini_scores = [self._info_gain(i_var) if i_var in indexes else -100 for i_var in range(self.X.shape[1])]
         else:
             gini_scores = [self._info_gain(i_var) for i_var in range(self.X.shape[1])]
-        print(gini_scores)
+        # print(gini_scores)
         self._i_split = np.argmax(gini_scores)
-        print(f"Split on var{self._i_split}")
+        # print(f"Split on var{self._i_split}")
 
         children = []
         for value in np.unique(self.X[:, self._i_split]):
