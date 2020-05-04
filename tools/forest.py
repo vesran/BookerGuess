@@ -6,7 +6,7 @@ import random as rand
 
 class RandomForestClassifier:
 
-    def __init__(self, n_estimators=1000, max_depth=1000, features_names=None, sampfactor=1):
+    def __init__(self, n_estimators=1000, max_depth=1000, features_names=None, sampfactor=1.0):
         self.n_estimators=n_estimators
         self.max_depth = max_depth
         self.n_features = None
@@ -44,17 +44,19 @@ class RandomForestClassifier:
 if __name__ == '__main__':
     import pandas as pd
 
-    # df = pd.read_csv('./resources/titanic.csv', sep=',').drop(['Fare', 'Name', 'Age'], axis=1)
-    # y = df['Survived'].values
-    # X = df.drop('Survived', axis=1).values
-    # rf = RandomForestClassifier(max_depth=10, n_estimators=100)
-    #
-    # rf.fit(X, y)
+    df = pd.read_csv('./resources/titanic.csv', sep=',').drop(['Fare', 'Name', 'Age'], axis=1)
+    y = df['Survived'].values
+    X = df.drop('Survived', axis=1).values
+    rf = RandomForestClassifier(max_depth=10, n_estimators=100, sampfactor=0.6)
 
-    n = 1000
-    X = np.array([[rand.choice([1, 2, 3]) for _ in range(20)] for _ in range(n)])
-    y = np.array([rand.choice(['a', 'b', 'c']) for _ in range(n)])
-    rf = RandomForestClassifier(max_depth=10, n_estimators=30, sampfactor=0.6)
-    rf.fit(X[:900], y[:900])
+    rf.fit(X[:800], y[:800])
+    (rf.predict(X[800:]) == y[800:]).astype(int).sum() / X[800:].shape[0]
+
+
+    # n = 1000
+    # X = np.array([[rand.choice([1, 2, 3]) for _ in range(20)] for _ in range(n)])
+    # y = np.array([rand.choice(['a', 'b', 'c']) for _ in range(n)])
+    # rf = RandomForestClassifier(max_depth=10, n_estimators=30, sampfactor=0.6)
+    # rf.fit(X[:900], y[:900])
 
     rf._single_predict(X[6], debug=True)
