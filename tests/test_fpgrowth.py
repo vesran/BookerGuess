@@ -17,3 +17,4 @@ def test_build_tree():
     assert tree.root.nexts[0].item == 'a'
     assert tree.root.nexts[0].nexts[0].item == 'c'
     assert tree.root.nexts[0].nexts[1].occ == 1
+    assert tree.item_nodes['b'].__len__() == 2
