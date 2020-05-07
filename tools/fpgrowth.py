@@ -20,12 +20,11 @@ class FPTree:
         frequencies = _frequency(data)
 
         # Sort items in sets
-        self.items = {item: FPNode(item=item) for item in frequencies}
+        self.item_nodes = {item: [] for item in frequencies}
         self.sets = [sorted(one_set, key=lambda x: frequencies[x], reverse=True) for one_set in data]
         self.root = FPNode()
 
     def build(self):
-        lastest_nodes = {item: [] for item in self.items}
         for items in self.sets:
             # Add path
             current = self.root
@@ -33,7 +32,7 @@ class FPTree:
                 next = current.find_and_inc(item)
                 if next is None:
                     next = current.add_and_return(item)
-                    lastest_nodes[item].append(next)
+                    self.item_nodes[item].append(next)
                 current = next
         print("Done")
 
