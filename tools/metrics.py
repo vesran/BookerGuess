@@ -40,7 +40,7 @@ def precision(bi_confmat):
 
 
 def f1_score(y_pred, y_true):
-    labels = np.unique(y)
+    labels = np.unique(y_true)
     counts = np.zeros((labels.shape[0], labels.shape[0]))
     for prediction, truth in zip(y_pred, y_true):
         i_truth = np.where(labels == truth)[0][0]
