@@ -1,6 +1,3 @@
-# TODO : Decision tree
-# TODO : Random forest
-
 import numpy as np
 import random as rand
 from collections import Counter
@@ -9,7 +6,7 @@ from collections import Counter
 class DecisionTreeClassifier:
     """ Decision Tree for categorical variables and classification using CART """
 
-    def __init__(self, max_depth, label_names=None, _i_split=None, _i_var=None, _value=None, random_features=False):
+    def __init__(self, max_depth, label_names=None, _i_split=None, _i_var=None, _value=None, random_features=False, class_weights=None):
         self.max_depth = max_depth
         self.X, self.y = None, None
         self.children = None
@@ -18,6 +15,7 @@ class DecisionTreeClassifier:
         self._i_var = _i_var
         self._value = _value
         self.random_features = random_features
+        self.class_weights = class_weights
 
     def fit(self, X, y):
         self.X, self.y = X, y
@@ -37,11 +35,12 @@ class DecisionTreeClassifier:
         return self.max_depth > 0 and np.unique(self.y).shape[0] > 1 and self.X.shape[1] > 1
 
     def _gini(self, i_var, value):
+        self.class_weights = self.class_weights if self.class_weights is not None else {label: 1.0 for label in np.unique(self.y)}
         score = 0
         positions = np.where(self.X[:, i_var] == value)[0]
         sub_y = self.y[positions]
         for label in np.unique(self.y):
-            nb_label = np.where(sub_y == label)[0].shape[0] / sub_y.shape[0]
+            nb_label = self.class_weights[label] * np.where(sub_y == label)[0].shape[0] / sub_y.shape[0]  # Weighted !
             score += (nb_label ** 2)
         return 1 - score
 
@@ -71,7 +70,8 @@ class DecisionTreeClassifier:
                 names = self.label_names[:]
                 names.pop(self._i_split)
             child = DecisionTreeClassifier(max_depth=self.max_depth-1, _i_var=self._i_split, _value=value,
-                                           label_names=names, random_features=self.random_features)
+                                           label_names=names, random_features=self.random_features,
+                                           class_weights=self.class_weights)
             positions = np.where(self.X[:, self._i_split] == value)[0]
             child.X = np.delete(self.X[positions], self._i_split, axis=1)
             child.y = self.y[positions]
@@ -100,7 +100,10 @@ class DecisionTreeClassifier:
                     break
             if loop:
                 break
-        return Counter(current.y).most_common(1)[0][0]
+        counts = Counter(current.y)
+        for k in counts:
+            counts[k] *= self.class_weights[k]
+        return counts.most_common(1)[0][0]
 
     def predict(self, X):
         predictions = np.array([self._single_predict(x) for x in X])
@@ -152,6 +155,7 @@ def plot_decision_tree(dtree, console=False):
 
 
 if __name__ == '__main__':
+    from tools.metrics import confusion_matrix
     from ete3 import AttrFace, faces
     import ete3
     import pandas as pd
@@ -160,9 +164,14 @@ if __name__ == '__main__':
     df = pd.read_csv('./resources/titanic.csv', sep=',').drop(['Fare', 'Name', 'Age'], axis=1)
     y = df['Survived'].values
     X = df.drop('Survived', axis=1).values
-    dtree = DecisionTreeClassifier(max_depth=10,
+    n0 = df[df['Survived'] == 0].shape[0]
+    n1 = df[df['Survived'] == 1].shape[0]
+    weights = {0: 1-(n0 / (n0 + n1)), 1: 1-(n1 / (n0 + n1))}
+    dtree = DecisionTreeClassifier(max_depth=10, class_weights=weights,
                                    label_names=['Pclass', 'Sex', 'Siblings/Spouses Aboard', 'Parents/Children Aboard'])
     dtree.fit(X[:700], y[:700])
-    # print(dtree._single_predict(X[0]))
+    print((dtree.predict(X[700:]) == y[700:]).astype(int).sum() / y[700:].shape[0])
 
-    ete_tree, ts = plot_decision_tree(dtree, console=True)
+    # ete_tree, ts = plot_decision_tree(dtree, console=True)
+
+    confusion_matrix(dtree, X[700:], y[700:], plot=True)
