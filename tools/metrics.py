@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def confusion_matrix(classifier, X, y, normalize=True, decimal=2, plot=False):
+def confusion_matrix(classifier, X, y, normalize=True, decimal=2, plot=False, figsize=(10, 10)):
     labels = np.unique(y)
     y_pred = classifier.predict(X)
     counts = np.zeros((labels.shape[0], labels.shape[0]))
@@ -16,18 +16,20 @@ def confusion_matrix(classifier, X, y, normalize=True, decimal=2, plot=False):
         counts = np.round(counts / np.sum(counts, axis=1).reshape(counts.shape[0], 1), decimal)
 
     if plot:
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=figsize)
         ax.grid(False)
         ax.matshow(counts, cmap=plt.cm.Blues)
         ax.set_ylabel('Truth')
         ax.set_xlabel('Prediction')
-        ax.set_xticklabels([0] + labels.tolist())
-        ax.set_yticklabels([0] + labels.tolist())
+        ax.set_xticks(np.arange(len(labels)))
+        ax.set_yticks(np.arange(len(labels)))
+        ax.set_xticklabels(labels.tolist())
+        ax.set_yticklabels(labels.tolist())
+
         for (i, j), z in np.ndenumerate(counts):
             color = 'black' if counts[i][j] <= 0.5 or not normalize else 'white'
             ax.text(j, i, f'{{:0.{decimal}f}}'.format(z), ha='center', va='center', c=color)
     return counts
-
 
 def recall(bi_confmat):
     assert bi_confmat.shape == (2, 2)
