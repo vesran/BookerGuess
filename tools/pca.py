@@ -2,6 +2,11 @@ import numpy as np
 
 
 def PCA(data, k=2):
+    """ PCA
+    :param data: numpy array
+    :param k: final dimensionality
+    :return: data with k dimensionality
+    """
     data = data - data.mean(axis=0)
     data = data / data.std(axis=0)
     R = np.cov(data.T, rowvar=True)

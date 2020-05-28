@@ -99,23 +99,4 @@ class DecisionTreeClassifier:
         return counts.most_common(1)[0][0]
 
     def predict(self, X):
-        predictions = np.array([self._single_predict(x) for x in X])
-        return predictions
-
-
-if __name__ == '__main__':
-    from tools.metrics import confusion_matrix
-    import pandas as pd
-
-    df = pd.read_csv('./resources/titanic.csv', sep=',').drop(['Fare', 'Name', 'Age'], axis=1)
-    y = df['Survived'].values
-    X = df.drop('Survived', axis=1).values
-    n0 = df[df['Survived'] == 0].shape[0]
-    n1 = df[df['Survived'] == 1].shape[0]
-    weights = {0: 1-(n0 / (n0 + n1)), 1: 1-(n1 / (n0 + n1))}
-    dtree = DecisionTreeClassifier(max_depth=10, class_weights=weights,
-                                   label_names=['Pclass', 'Sex', 'Siblings/Spouses Aboard', 'Parents/Children Aboard'])
-    dtree.fit(X[:700], y[:700])
-    print((dtree.predict(X[700:]) == y[700:]).astype(int).sum() / y[700:].shape[0])
-
-    # confusion_matrix(dtree, X[700:], y[700:], plot=True)
+        return np.array([self._single_predict(x) for x in X])

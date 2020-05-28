@@ -5,6 +5,7 @@ import random as rand
 
 
 class RandomForestClassifier:
+    """ Random Forest classifier for categorical variables."""
 
     def __init__(self, n_estimators=1000, max_depth=1000, features_names=None, sampfactor=1.0, class_weights=None):
         self.n_estimators = n_estimators
@@ -60,15 +61,3 @@ class RandomForestClassifier:
 
     def predict_proba(self, X):
         return np.array([self._predict_single_proba(x) for x in X])
-
-
-if __name__ == '__main__':
-    import pandas as pd
-
-    df = pd.read_csv('./resources/titanic.csv', sep=',').drop(['Fare', 'Name', 'Age'], axis=1)
-    y = df['Survived'].values
-    X = df.drop('Survived', axis=1).values
-    rf = RandomForestClassifier(max_depth=10, n_estimators=100)
-
-    rf.fit(X[:800], y[:800])
-    (rf.predict(X[800:]) == y[800:]).astype(int).sum() / X[800:].shape[0]

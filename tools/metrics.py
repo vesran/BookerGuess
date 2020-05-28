@@ -3,6 +3,16 @@ import matplotlib.pyplot as plt
 
 
 def confusion_matrix(classifier, X, y, normalize=True, decimal=2, plot=False, figsize=(10, 10)):
+    """ Computes the confusion matrix.
+    :param classifier: Should have .fit method. Used to make predictions
+    :param X: Input data for the classifier
+    :param y: True labels
+    :param normalize: confusion matrix is normalized if True
+    :param decimal: number of decimals
+    :param plot: display using matplotlib if True
+    :param figsize: tuple for figure size.
+    :return: confusion matrix as numpy array
+    """
     labels = np.unique(y)
     y_pred = classifier.predict(X)
     counts = np.zeros((labels.shape[0], labels.shape[0]))
@@ -33,6 +43,10 @@ def confusion_matrix(classifier, X, y, normalize=True, decimal=2, plot=False, fi
 
 
 def recall(bi_confmat):
+    """ Computes recall.
+    :param bi_confmat: Confusion matrix of dimension 2.
+    :return: Recall value.
+    """
     assert bi_confmat.shape == (2, 2)
     den = bi_confmat[0][0] + bi_confmat[0][1]
     if den != 0:
@@ -42,6 +56,10 @@ def recall(bi_confmat):
 
 
 def precision(bi_confmat):
+    """ Computes precision value.
+    :param bi_confmat: Confusion matrix of dimension 2.
+    :return: Precision value.
+    """
     assert bi_confmat.shape == (2, 2)
     den = bi_confmat[0][0] + bi_confmat[1][0]
     if den != 0:
@@ -51,6 +69,12 @@ def precision(bi_confmat):
 
 
 def f1_score(y_pred, y_true, bimat=False):
+    """ Computes f1-score.
+    :param y_pred: predicted labels
+    :param y_true: ground truth
+    :param bimat: Print confusion matrix if True
+    :return: f1-score ad float
+    """
     labels = np.unique(y_true)
     counts = np.zeros((labels.shape[0], labels.shape[0]))
     for prediction, truth in zip(y_pred, y_true):
@@ -66,10 +90,23 @@ def f1_score(y_pred, y_true, bimat=False):
 
 
 def score(y_pred, y_true):
+    """ Computes accuracy. Default metric.
+    :param y_pred: predicted labels
+    :param y_true: ground truth
+    :return: Accuracy score ad float
+    """
     return np.sum((y_pred == y_true).astype(int)) / y_true.shape[0]
 
 
 def cross_validation_score(model, X, y, k=3, scorer=score):
+    """ Performs a cross-validation evaluation of the given model.
+    :param model: Classifier must have .fit and .predict method.
+    :param X: Input data.
+    :param y: True labels.
+    :param k: Number of partitions.
+    :param scorer: Metric to use.
+    :return: numpy array containing scores given by the specified metric.
+    """
     n = X.shape[0]
     p = np.random.permutation(len(X))
     X, y = X[p], y[p]
@@ -91,21 +128,3 @@ def cross_validation_score(model, X, y, k=3, scorer=score):
         y_pred = model.predict(partition_X[i])
         scores.append(scorer(y_pred, partition_y[i]))
     return np.array(scores)
-
-
-if __name__ == '__main__':
-    from sklearn.model_selection import cross_val_score
-    from sklearn.tree import DecisionTreeClassifier
-    from sklearn import datasets
-
-    iris = datasets.load_iris()
-    X = iris.data
-    y = iris.target
-    model = DecisionTreeClassifier()
-    cross_val_score(model, X, y).mean()
-
-    cross_validation_score(model, X, y, k=10, scorer=f1_score).mean()
-
-    y_pred = np.array(['DF', 'DF', 'DF', 'DF'])
-    y_true = np.array(['DF', 'NDF', 'DF', 'NDF'])
-    f1_score(y_pred, y_true)
