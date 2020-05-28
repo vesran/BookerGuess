@@ -14,8 +14,10 @@ class RandomForestClassifier:
                       for _ in range(self.n_estimators)]
         self.X, self.y = None, None
         self.sampfactor = sampfactor
+        self.classes_ = None
 
     def fit(self, X, y):
+        self.classes_ = np.unique(y)
         sampsize = int(X.shape[0] * self.sampfactor)
         assert sampsize > 0
         for dtree in self.trees:
@@ -39,6 +41,17 @@ class RandomForestClassifier:
 
     def predict(self, X):
         return np.array([self._single_predict(x) for x in X])
+
+    def _predict_single_proba(self, x):
+        preds = [dtree._single_predict(x) for dtree in self.trees]
+        res = []
+        for label in self.classes_:
+            occ = preds.count(label)
+            res.append(occ)
+        return np.array(res) / self.n_estimators
+
+    def predict_proba(self, X):
+        return np.array([self._predict_single_proba(x) for x in X])
 
 
 if __name__ == '__main__':

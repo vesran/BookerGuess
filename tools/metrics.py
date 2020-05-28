@@ -31,25 +31,37 @@ def confusion_matrix(classifier, X, y, normalize=True, decimal=2, plot=False, fi
             ax.text(j, i, f'{{:0.{decimal}f}}'.format(z), ha='center', va='center', c=color)
     return counts
 
+
 def recall(bi_confmat):
     assert bi_confmat.shape == (2, 2)
-    return bi_confmat[0][0] / (bi_confmat[0][0] + bi_confmat[0][1])
+    den = bi_confmat[0][0] + bi_confmat[0][1]
+    if den != 0:
+        return bi_confmat[0][0] / den
+    else:
+        return 0
 
 
 def precision(bi_confmat):
     assert bi_confmat.shape == (2, 2)
-    return bi_confmat[0][0] / (bi_confmat[0][0] + bi_confmat[1][0])
+    den = bi_confmat[0][0] + bi_confmat[1][0]
+    if den != 0:
+        return bi_confmat[0][0] / den
+    else:
+        return 0
 
 
-def f1_score(y_pred, y_true):
+def f1_score(y_pred, y_true, bimat=False):
     labels = np.unique(y_true)
     counts = np.zeros((labels.shape[0], labels.shape[0]))
     for prediction, truth in zip(y_pred, y_true):
         i_truth = np.where(labels == truth)[0][0]
         i_prediction = np.where(labels == prediction)[0][0]
         counts[i_truth][i_prediction] += 1
+    print(counts) if bimat else 0
     prec = precision(counts)
     rec = recall(counts)
+    if prec == 0 or rec == 0:
+        return 0
     return 2 * rec * prec / (rec + prec)
 
 
@@ -93,3 +105,7 @@ if __name__ == '__main__':
     cross_val_score(model, X, y).mean()
 
     cross_validation_score(model, X, y, k=10, scorer=f1_score).mean()
+
+    y_pred = np.array(['DF', 'DF', 'DF', 'DF'])
+    y_true = np.array(['DF', 'NDF', 'DF', 'NDF'])
+    f1_score(y_pred, y_true)
