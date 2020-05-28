@@ -1,4 +1,4 @@
-from tools.decision_tree import DecisionTreeClassifier, decision_tree2ete
+from tools.decision_tree import DecisionTreeClassifier
 from collections import Counter
 import numpy as np
 import random as rand
@@ -6,8 +6,8 @@ import random as rand
 
 class RandomForestClassifier:
 
-    def __init__(self, n_estimators=1000, max_depth=1000, features_names=None, sampfactor=1.0):
-        self.n_estimators=n_estimators
+    def __init__(self, n_estimators=1000, max_depth=1000, features_names=None, sampfactor=1.0, class_weights=None):
+        self.n_estimators = n_estimators
         self.max_depth = max_depth
         self.n_features = None
         self.trees = [DecisionTreeClassifier(max_depth=self.max_depth, random_features=True, label_names=features_names)
@@ -15,6 +15,7 @@ class RandomForestClassifier:
         self.X, self.y = None, None
         self.sampfactor = sampfactor
         self.classes_ = None
+        self.class_weights = class_weights
 
     def fit(self, X, y):
         self.classes_ = np.unique(y)
@@ -30,6 +31,13 @@ class RandomForestClassifier:
                 y_train.append(y[i])
             X_train, y_train = np.array(X_train), np.array(y_train)
             assert X_train.dtype == X.dtype
+
+            # Handle class weights
+            if self.class_weights == 'balanced_subsample':
+                weights = {label: 1-(y_train.tolist().count(label)/y_train.shape[0]) for label in np.unique(y_train)}
+            else:
+                weights = self.class_weights
+            dtree.class_weights = weights
 
             # Training the tree
             dtree.fit(X_train, y_train)
@@ -60,16 +68,7 @@ if __name__ == '__main__':
     df = pd.read_csv('./resources/titanic.csv', sep=',').drop(['Fare', 'Name', 'Age'], axis=1)
     y = df['Survived'].values
     X = df.drop('Survived', axis=1).values
-    rf = RandomForestClassifier(max_depth=10, n_estimators=100, sampfactor=0.6)
+    rf = RandomForestClassifier(max_depth=10, n_estimators=100)
 
     rf.fit(X[:800], y[:800])
     (rf.predict(X[800:]) == y[800:]).astype(int).sum() / X[800:].shape[0]
-
-
-    # n = 1000
-    # X = np.array([[rand.choice([1, 2, 3]) for _ in range(20)] for _ in range(n)])
-    # y = np.array([rand.choice(['a', 'b', 'c']) for _ in range(n)])
-    # rf = RandomForestClassifier(max_depth=10, n_estimators=30, sampfactor=0.6)
-    # rf.fit(X[:900], y[:900])
-
-    rf._single_predict(X[6], debug=True)
