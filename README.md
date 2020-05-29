@@ -34,4 +34,8 @@ pip install numpy pandas folium gensim
 * Undersampling et gestion du problème de classes déséquilibrées,
 * Visualisation des destinations suggérées aux utilisateurs sur une carte.
 
-![Carte](./imgs/intro.jpg)
+<br>
+
+<img align="center" src="./imgs/intro.jpg" alt="carte" width="700">
+
+
