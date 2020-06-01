@@ -7,7 +7,7 @@ Le problème posé se résume à établir des suggestions de destinations pour
 des utilisateurs nouvellement inscrits sur la plateforme Airbnb. 
 
 Le but de ce projet est de fournir des analyses pertinentes sur les données 
-des utilisateurs afin de prédire leur comportement (vont-il réserver ?, quelle destination ?).
+des utilisateurs afin de prédire leur comportement (vont-ils réserver ?, quelle destination ?).
 Dans le cadre du devoir, la contrainte est **d'implémenter au maximum tout 
 algorithme de Machine Learning et d'analyse soi-même** (Kmeans, RandomForest, PCA...).
  
