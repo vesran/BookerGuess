@@ -30,7 +30,7 @@ pip install numpy pandas folium gensim
 * Embeddings de séquences d'actions / historiques des utilisateurs,
 * Extraction d'actions récurrentes ,
 * Implémentations d'arbres de décisions et méthodes d'ensemble,
-* Clustering des utilisateurs,
+* Clustering du comportement des utilisateurs,
 * Undersampling et gestion du problème de classes déséquilibrées,
 * Visualisation des destinations suggérées aux utilisateurs sur une carte.
 
